@@ -4,11 +4,11 @@ from aiogram import Bot, Dispatcher
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, WebAppInfo, Message
 from aiogram.filters import Command
 from aiogram import Router
+from config import BOT_TOKEN
 
-TOKEN = "8308574336:AAEwKTNSpzv5lxcn0UJpCc7z-atggLeMO-s"
 WEBAPP_URL = "https://3823474339f6.ngrok-free.app"  # сюда вставь https ngrok url (root страницы)
 
-bot = Bot(token=TOKEN)
+bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
 router = Router()
 
