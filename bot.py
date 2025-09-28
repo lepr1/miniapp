@@ -6,7 +6,7 @@ from aiogram.filters import Command
 from aiogram import Router
 from config import BOT_TOKEN
 
-WEBAPP_URL = "https://3823474339f6.ngrok-free.app"  # сюда вставь https ngrok url (root страницы)
+WEBAPP_URL = "https://3823474339f6.ngrok-free.app" 
 
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
