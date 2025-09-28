@@ -22,7 +22,6 @@ main_kb = ReplyKeyboardMarkup(
     resize_keyboard=True
 )
 
-# /start отправляет кнопку
 @dp.message(Command("start"))
 async def cmd_start(message: Message):
     await message.answer("Привет, настоящий ценитель искусства!\n\n Нажми кнопку, чтобы открыть WebApp и заказать самые лучшие шмотки:", reply_markup=main_kb)
@@ -52,7 +51,7 @@ async def handle_webapp(message: Message):
             await message.answer(f"Данные с WebApp: {raw}")
     # если message.web_app_data нет — ничего не делаем (или можно обработать текстовые сообщения)
 
-# не забудь подключить router
+
 dp.include_router(router)
 
 async def main():
