@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>MiniApp — Заказ</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    body { 
+      background:#0f1724; color:#fff; font-family:Arial,Helvetica,sans-serif;
+      display:flex; flex-direction:column; align-items:center; margin:0; min-height:100vh;
+      padding:20px;
+    }
+
+    h1.gradient-text {
+      background: linear-gradient(90deg, #000000, #ffffff, #000000);
+      background-size: 200% 100%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-size: 36px;
+      font-weight: bold;
+      margin-bottom: 20px;
+      animation: shimmer 3s linear infinite;
+      text-align: center;
+      transition: filter 0.3s ease;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    .card { 
+      width:95%; max-width:520px; padding:20px; border-radius:12px;
+      background:linear-gradient(180deg,#111827,#0b1220); 
+      box-shadow:0 8px 30px rgba(0,0,0,0.6); 
+      margin-top: 20px;
+      transition: opacity 0.3s ease;
+      position: fixed;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 10;
+      display: none;
+      opacity: 0;
+    }
+
+    .card.show { opacity: 1; }
+
+    label { display:block; margin-top:12px; font-size:13px; color:#cbd5e1; }
+    input[type="text"], select { 
+      width:100%; padding:10px; margin-top:6px; border-radius:8px;
+      border:1px solid #1f2937; background:#1f1f2f; color:#fff; box-sizing:border-box; 
+    }
+
+    button { 
+      margin-top:16px; padding:12px 16px; border-radius:10px; cursor:pointer; 
+      font-weight:600; border:none;
+    }
+    .send { background:#1e1e2f; color:#ffffff; transition:0.3s; }
+    .send:hover { background:#373740; }
+    .send:disabled { opacity:0.6; cursor:not-allowed; }
+
+    .info { margin-top:8px; font-size:13px; color:#94a3b8; }
+
+    #start-screen { text-align:center; width:100%; transition: filter 0.3s ease; }
+
+    .catalog-item {
+      padding:10px 14px;
+      margin-bottom:10px;
+      border-radius:8px;
+      background:#1f1f2f;
+      color:#fff;
+      border:1px solid #2a2a3a;
+      cursor:pointer;
+      transition:0.2s;
+    }
+
+    .catalog-item:hover { background:#373740; }
+
+    .blur { filter: blur(5px); }
+  </style>
+</head>
+<body>
+  <!-- Заголовок сверху -->
+  <h1 id="mainTitle" class="gradient-text">twenty seven | shop</h1>
+
+  <!-- Стартовый экран -->
+  <div id="start-screen">
+    <p>Это наш мини-каталог.</p>
+    <button id="openCatalogBtn" class="send">📂 Открыть каталог</button>
+    <button id="openFormBtn" class="send">🛒 Оформить заказ</button>
+  </div>
+
+  <!-- Форма заказа -->
+  <div id="order-form" class="card">
+    <h2>Оформление заказа</h2>
+
+    <label>Username</label>
+    <input id="username" type="text" placeholder="@username или имя" />
+
+    <label>Размер</label>
+    <select id="size">
+      <option value="XS">XS</option>
+      <option value="S">S</option>
+      <option value="M" selected>M</option>
+      <option value="L">L</option>
+      <option value="XL">XL</option>
+      <option value="XXL">XXL</option>
+    </select>
+
+    <label>Количество</label>
+    <input id="count" type="text" placeholder="Число в формате числа">
+
+    <label>Название одежды</label>
+    <input id="item" type="text" placeholder="Например: Футболка 'Basic'" value="Футболка Basic" />
+
+    <button id="sendBtn" class="send">Отправить</button>
+    <button id="closeFormBtn" class="send">Закрыть</button>
+    <div id="status" class="info"></div>
+  </div>
+
+  <!-- Каталог товаров -->
+  <div id="catalog" class="card">
+    <h2>Каталог товаров</h2>
+    <div id="catalog-items"></div>
+    <button id="closeCatalogBtn" class="send">Закрыть</button>
+  </div>
+
+  <script>
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+    tg.ready();
+
+    const startScreen = document.getElementById("start-screen");
+    const mainTitle = document.getElementById("mainTitle");
+
+    // Кнопки и модальные окна
+    const openFormBtn = document.getElementById("openFormBtn");
+    const orderForm = document.getElementById("order-form");
+    const closeFormBtn = document.getElementById("closeFormBtn");
+
+    const openCatalogBtn = document.getElementById("openCatalogBtn");
+    const catalog = document.getElementById("catalog");
+    const catalogItems = document.getElementById("catalog-items");
+    const closeCatalogBtn = document.getElementById("closeCatalogBtn");
+
+    // Автозаполнение username
+    try {
+      const user = tg.initDataUnsafe && tg.initDataUnsafe.user ? tg.initDataUnsafe.user : null;
+      if (user) {
+        const username = user.username ? '@' + user.username : (user.first_name || '');
+        if (username) document.getElementById('username').value = username;
+      }
+    } catch (e) {
+      console.warn("initDataUnsafe unavailable", e);
+    }
+
+    // --- Форма заказа ---
+    openFormBtn.addEventListener("click", () => {
+      startScreen.classList.add("blur");
+      mainTitle.style.filter = "blur(5px)";
+      orderForm.style.display = "block";
+      setTimeout(() => orderForm.classList.add("show"), 10);
+    });
+
+    closeFormBtn.addEventListener("click", () => {
+      orderForm.classList.remove("show");
+      setTimeout(() => {
+        orderForm.style.display = "none";
+        startScreen.classList.remove("blur");
+        mainTitle.style.filter = "blur(0px)";
+      }, 300);
+    });
+
+    const sendBtn = document.getElementById('sendBtn');
+    const status = document.getElementById('status');
+
+    function validate() {
+      const username = document.getElementById('username').value.trim();
+      const item = document.getElementById('item').value.trim();
+      const count = document.getElementById('count').value.trim();
+      return username.length > 0 && item.length > 0 && Number(count) > 0;
+    }
+
+    sendBtn.addEventListener('click', () => {
+      if (!validate()) {
+        status.textContent = "Заполните username, количество и название одежды.";
+        return;
+      }
+      const data = {
+        username: document.getElementById('username').value.trim(),
+        size: document.getElementById('size').value,
+        item: document.getElementById('item').value.trim(),
+        count: document.getElementById('count').value.trim()
+      };
+      try {
+        tg.sendData(JSON.stringify(data));
+        status.textContent = "Отправлено. Закрываю WebApp...";
+        sendBtn.disabled = true;
+        setTimeout(() => tg.close(), 700);
+      } catch (err) {
+        status.textContent = "Ошибка при отправке: " + (err.message || err);
+      }
+    });
+
+    // --- Каталог товаров ---
+    openCatalogBtn.addEventListener("click", () => {
+      startScreen.classList.add("blur");
+      mainTitle.style.filter = "blur(5px)";
+      catalog.style.display = "block";
+      setTimeout(() => catalog.classList.add("show"), 10);
+
+      const products = [
+        { name: "Футболка Basic" },
+        { name: "Худи Dark" },
+        { name: "Кепка Minimal" }
+      ];
+
+      catalogItems.innerHTML = "";
+      products.forEach(product => {
+        const itemDiv = document.createElement("div");
+        itemDiv.className = "catalog-item";
+        itemDiv.textContent = product.name;
+        catalogItems.appendChild(itemDiv);
+      });
+    });
+
+    closeCatalogBtn.addEventListener("click", () => {
+      catalog.classList.remove("show");
+      setTimeout(() => {
+        catalog.style.display = "none";
+        startScreen.classList.remove("blur");
+        mainTitle.style.filter = "blur(0px)";
+      }, 300);
+    });
+  </script>
+</body>
+</html>
