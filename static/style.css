@@ -1,0 +1,116 @@
+body {
+  background: #0f1724;
+  color: #fff;
+  font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  text-align: center;
+}
+
+/* Верхняя надпись */
+.title {
+  margin: 20px 0;
+  font-size: 24px;
+  background: linear-gradient(90deg, black, white, black);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shine 3s linear infinite;
+}
+
+@keyframes shine {
+  0% { background-position: 0% center; }
+  100% { background-position: 200% center; }
+}
+
+/* Главный экран */
+.main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-top: 30px;
+  transition: filter 0.3s ease;
+}
+
+.main.blur {
+  filter: blur(6px);
+}
+
+/* Окна (карточки) */
+.card {
+  width: 90%;
+  max-width: 500px;
+  padding: 20px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #111827, #0b1220);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.9);
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.3s ease;
+  z-index: 10;
+}
+
+.card.show {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+  pointer-events: auto;
+}
+
+/* Кнопки */
+button {
+  margin-top: 12px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  width: 100%;
+  border: none;
+}
+
+.send {
+  background: #06b6d4;
+  color: #042027;
+}
+
+.dark-btn {
+  background: #1e293b;
+  color: #e2e8f0;
+}
+
+.dark-btn:hover {
+  background: #334155;
+}
+
+.send:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Текстовое поле и select */
+input[type="text"], select {
+  width: 100%;
+  padding: 10px;
+  margin-top: 6px;
+  border-radius: 8px;
+  border: 1px solid #1f2937;
+  background: #071127;
+  color: #fff;
+  box-sizing: border-box;
+}
+
+label {
+  display: block;
+  margin-top: 12px;
+  font-size: 13px;
+  color: #cbd5e1;
+}
+
+.info {
+  margin-top: 8px;
+  font-size: 13px;
+  color: #94a3b8;
+}
